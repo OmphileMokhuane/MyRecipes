@@ -3,12 +3,15 @@ let dataset = [];
 async function fetchRecipes() {
     try { 
         const response = await fetch('http://localhost:3000/api/recipes');
-        const data = await response.json();  
+        const data = await response.json();
+        dataset = data; // Store the fetched data in dataset
+        console.log('Fetched recipes:', dataset); // Debug log
     } catch (error) {
         console.error('Error fetching recipes:', error);
     }
 }
 
+// Initial fetch and display
 fetchRecipes().then(() => {
     createRecipeCards();
 });
@@ -18,6 +21,11 @@ function createRecipeCards(){
     const recipeGrid = document.getElementById('recipe-grid');
     // Clear previous cards
     recipeGrid.innerHTML = '';
+    
+    if (dataset.length === 0) {
+        recipeGrid.innerHTML = '<p>No recipes found</p>';
+        return;
+    }
     
     dataset.forEach(recipe => {
         recipeGrid.innerHTML += `
@@ -33,18 +41,15 @@ function createRecipeCards(){
     //Add event listeners to recipe cards
     document.querySelectorAll('.recipe-card').forEach(card => {
         card.addEventListener('click', function(event) {
-            // Prevent default anchor behavior
             event.preventDefault();
-
-            // Get the recipe ID from the clicked card
             const recipeId = this.getAttribute('data-id');
-            showRecipeDetails(recipeId);
+            openRecipeInfoModal(recipeId);
         });
     });
 }
 
-function openRecipeInfoModal() {
-    const recipe = dataset.find(r => r.id === recipeId);
+function openRecipeInfoModal(recipeId) {
+    const recipe = dataset.find(r => r.id === parseInt(recipeId));
     if (!recipe) return;
 
     const modal = document.getElementById('recipeModal');
@@ -61,13 +66,13 @@ function openRecipeInfoModal() {
             <ol>${recipe.instructions.map(step => `<li>${step}</li>`).join('')}</ol>
             </div>`;
 
-            // show modal
-            modal.classList.remove('hidden'); 
+    // show modal
+    modal.classList.remove('hidden'); 
 
-        // Hide modal on close button click
-        document.getElementById('closeModal').addEventListener('click', function() {
-            modal.classList.add('hidden');
-        });
+    // Hide modal on close button click
+    document.getElementById('closeModal').addEventListener('click', function() {
+        modal.classList.add('hidden');
+    });
 
     // Hide modal on outside click
     window.addEventListener('click', function(event) {

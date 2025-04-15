@@ -1,6 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +11,23 @@ const DB_PATH = 'recipe.db';
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Add CSP headers
+app.use((req, res, next) => {
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
+        "img-src 'self' data: https:; " +
+        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+        "connect-src 'self' http://localhost:3000;"
+    );
+    next();
+});
+
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Database connection
 const db = new sqlite3.Database(DB_PATH, (err) => {
@@ -67,7 +85,7 @@ function initializeDatabase() {
     for (let i = 1; i <= 10; i++) {
       dummyRecipes.push({
         title: `Recipe ${i}`,
-        image: `/RecipeBook/images/recipe${i}.jpg`,
+        image: `/images/recipe${i}.jpg`,
         time: `${10 + i * 2} minutes`,
         serving: `${1 + (i % 4)} servings`,
         difficulty: ['Easy', 'Medium', 'Hard'][i % 3],
