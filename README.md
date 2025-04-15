@@ -2,7 +2,7 @@
 
 A modern, responsive web application for managing and browsing recipes. Built with a clean, user-friendly interface and robust backend functionality.
 
-![Recipe Book Screenshot](public/images/preview-1.png
+![Recipe Book Screenshot](public/images/preview-1.png)
 ![Recipe Book Screenshot](public/images/preview-3.png)
 ![Recipe Book Screenshot](public/images/preview-2.png)
 
