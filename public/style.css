@@ -393,6 +393,23 @@ footer p {
     color: #666;
 }
 
+/* Error Message */
+.error-message {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    color: #e74c3c;
+    border-left: 4px solid #e74c3c;
+}
+
+.error-message p {
+    margin: 10px 0;
+}
+
 /* Responsive Styles */
 @media (max-width: 1024px) {
     .hero-info h2 {

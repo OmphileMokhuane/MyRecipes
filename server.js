@@ -85,7 +85,7 @@ function initializeDatabase() {
     for (let i = 1; i <= 10; i++) {
       dummyRecipes.push({
         title: `Recipe ${i}`,
-        image: `/images/recipe${i}.jpg`,
+        image: `/images/hero.png`,
         time: `${10 + i * 2} minutes`,
         serving: `${1 + (i % 4)} servings`,
         difficulty: ['Easy', 'Medium', 'Hard'][i % 3],

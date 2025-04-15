@@ -2,12 +2,27 @@ let dataset = [];
 
 async function fetchRecipes() {
     try { 
+        console.log('Attempting to fetch recipes...');
         const response = await fetch('http://localhost:3000/api/recipes');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
         const data = await response.json();
         dataset = data; // Store the fetched data in dataset
         console.log('Fetched recipes:', dataset); // Debug log
+        
+        if (dataset.length === 0) {
+            console.warn('No recipes found in the database.');
+        }
     } catch (error) {
         console.error('Error fetching recipes:', error);
+        document.getElementById('recipe-grid').innerHTML = 
+            `<div class="error-message">
+                <p>Error loading recipes: ${error.message}</p>
+                <p>Please check that the server is running.</p>
+            </div>`;
     }
 }
 
