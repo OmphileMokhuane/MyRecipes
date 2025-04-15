@@ -62,9 +62,9 @@ http://localhost:3000
 
 recipe-book/
 ├── public/
-│ ├── images/
-│ ├── style.css
-│ └── script.js
+│  ├── images/
+│  ├── style.css
+│  └── script.js
 ├── server.js
 ├── package.json
 ├── recipe.db
