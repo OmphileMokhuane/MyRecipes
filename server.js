@@ -17,6 +17,7 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
     console.error('Error opening database ' + err.message);
   } else {
     console.log('Connected to the SQLite database.');
+    initializeDatabase();
   }
 });
 
