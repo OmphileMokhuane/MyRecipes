@@ -31,51 +31,51 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Database connection
 const db = new sqlite3.Database(DB_PATH, (err) => {
-  if (err) {
-    console.error('Error opening database ' + err.message);
-  } else {
-    console.log('Connected to the SQLite database.');
-    initializeDatabase();
-  }
+    if (err) {
+        console.error('Error opening database ' + err.message);
+    } else {
+        console.log('Connected to the SQLite database.');
+        initializeDatabase();
+    }
 });
 
 // Check & create table + insert dummy data if needed
 function initializeDatabase() {
     const createTableSQL = `
-      CREATE TABLE IF NOT EXISTS recipes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        image TEXT,
-        time TEXT,
-        serving TEXT,
-        difficulty TEXT,
-        description TEXT,
-        ingredients TEXT,
-        instructions TEXT
-      )
+        CREATE TABLE IF NOT EXISTS recipes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            image TEXT,
+            time TEXT,
+            serving TEXT,
+            difficulty TEXT,
+            description TEXT,
+            ingredients TEXT,
+            instructions TEXT
+        )
     `;
   
     db.run(createTableSQL, (err) => {
-      if (err) {
-        console.error('Error creating table:', err.message);
-        return;
-      }
-  
-      console.log('Table check/creation complete.');
-  
-      // Check if there is any data in the table
-      db.get('SELECT COUNT(*) AS count FROM recipes', (err, row) => {
         if (err) {
-          console.error('Error checking recipe count:', err.message);
-          return;
+            console.error('Error creating table:', err.message);
+            return;
         }
   
-        if (row.count === 0) {
-          insertDummyRecipes();
-        } else {
-          console.log(`Database already has ${row.count} recipes.`);
-        }
-      });
+        console.log('Table check/creation complete.');
+    
+        // Check if there is any data in the table
+        db.get('SELECT COUNT(*) AS count FROM recipes', (err, row) => {
+            if (err) {
+            console.error('Error checking recipe count:', err.message);
+            return;
+            }
+    
+            if (row.count === 0) {
+            insertDummyRecipes();
+            } else {
+            console.log(`Database already has ${row.count} recipes.`);
+            }
+        });
     });
   }
   
@@ -83,16 +83,16 @@ function initializeDatabase() {
     const dummyRecipes = [];
   
     for (let i = 1; i <= 10; i++) {
-      dummyRecipes.push({
-        title: `Recipe ${i}`,
-        image: `/images/hero.png`,
-        time: `${10 + i * 2} minutes`,
-        serving: `${1 + (i % 4)} servings`,
-        difficulty: ['Easy', 'Medium', 'Hard'][i % 3],
-        description: `This is a dummy description for Recipe ${i}.`,
-        ingredients: JSON.stringify([`Ingredient A${i}`, `Ingredient B${i}`, `Ingredient C${i}`]),
-        instructions: JSON.stringify([`Step 1 for Recipe ${i}`, `Step 2 for Recipe ${i}`])
-      });
+        dummyRecipes.push({
+            title: `Recipe ${i}`,
+            image: `/images/hero.png`,
+            time: `${10 + i * 2} minutes`,
+            serving: `${1 + (i % 4)} servings`,
+            difficulty: ['Easy', 'Medium', 'Hard'][i % 3],
+            description: `This is a dummy description for Recipe ${i}.`,
+            ingredients: JSON.stringify([`Ingredient A${i}`, `Ingredient B${i}`, `Ingredient C${i}`]),
+            instructions: JSON.stringify([`Step 1 for Recipe ${i}`, `Step 2 for Recipe ${i}`])
+        });
     }
   
     const insertSQL = `
@@ -101,23 +101,23 @@ function initializeDatabase() {
     `;
   
     dummyRecipes.forEach(recipe => {
-      db.run(insertSQL, [
-        recipe.title,
-        recipe.image,
-        recipe.time,
-        recipe.serving,
-        recipe.difficulty,
-        recipe.description,
-        recipe.ingredients,
-        recipe.instructions
+        db.run(insertSQL, [
+            recipe.title,
+            recipe.image,
+            recipe.time,
+            recipe.serving,
+            recipe.difficulty,
+            recipe.description,
+            recipe.ingredients,
+            recipe.instructions
       ]);
     });
   
     console.log('Inserted 10 dummy recipes.');
-  }
+}
   
-  // API endpoint to fetch recipes
-  app.get('/api/recipes', (req, res) => {
+// API endpoint to fetch recipes
+app.get('/api/recipes', (req, res) => {
     db.all('SELECT * FROM recipes', [], (err, rows) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -131,8 +131,8 @@ function initializeDatabase() {
         res.json(rows);
       }
     });
-  });
+});
   
-  app.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
-  });
+});
