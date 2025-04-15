@@ -1,5 +1,18 @@
 let dataset = [];
 
+async function fetchRecipes() {
+    try { 
+        const response = await fetch('http://localhost:3000/api/recipes');
+        const data = await response.json();  
+    } catch (error) {
+        console.error('Error fetching recipes:', error);
+    }
+}
+
+fetchRecipes().then(() => {
+    createRecipeCards();
+});
+
 function createRecipeCards(){
     const recipeGrid = document.getElementById('recipe-grid');
     recipeGrid.innerHTML = ''; // Clear previous cards

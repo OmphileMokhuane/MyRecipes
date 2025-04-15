@@ -4,7 +4,7 @@ const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_PATH = 'database.db';
+const DB_PATH = 'recipe.db';
 
 // Middleware
 app.use(cors());
