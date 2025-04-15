@@ -13,9 +13,11 @@ fetchRecipes().then(() => {
     createRecipeCards();
 });
 
+// Function to show recipe cards
 function createRecipeCards(){
     const recipeGrid = document.getElementById('recipe-grid');
-    recipeGrid.innerHTML = ''; // Clear previous cards
+    // Clear previous cards
+    recipeGrid.innerHTML = '';
     
     dataset.forEach(recipe => {
         recipeGrid.innerHTML += `
@@ -31,7 +33,10 @@ function createRecipeCards(){
     //Add event listeners to recipe cards
     document.querySelectorAll('.recipe-card').forEach(card => {
         card.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default anchor behavior
+            // Prevent default anchor behavior
+            event.preventDefault();
+
+            // Get the recipe ID from the clicked card
             const recipeId = this.getAttribute('data-id');
             showRecipeDetails(recipeId);
         });
