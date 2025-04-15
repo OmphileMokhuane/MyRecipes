@@ -35,23 +35,27 @@ A modern, responsive web application for managing and browsing recipes. Built wi
 
 1. Clone the repository:
 
-bash
+```bash
 git clone https://github.com/yourusername/recipe-book.git
 cd recipe-book
+```
 
 2. Install dependencies:
 
-bash
+```bash
 npm install
+```
 
 3. Start the server:
 
-bash
+```bash
 node server.js
-
+```
 4. Open your browser and navigate to:
 
+```bash
 http://localhost:3000
+```
 
 
 ## Project Structure
