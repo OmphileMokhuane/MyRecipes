@@ -369,6 +369,8 @@ header nav ul li a:hover {
     width: 90%;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    max-height: 90vh;
+    overflow-y: auto;
   }
   
   .modal-content img {
@@ -534,4 +536,55 @@ footer p {
     header, footer, .recipe-card {
         background-color: #2b2b2b;
     }
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #c94f7c;
+    box-shadow: 0 0 0 3px rgba(201, 79, 124, 0.2);
+}
+
+.submit-btn {
+    background-color: #c94f7c;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.submit-btn:hover {
+    background-color: #b03d67;
+    transform: translateY(-2px);
 }

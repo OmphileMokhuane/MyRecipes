@@ -8,9 +8,19 @@ const PORT = process.env.PORT || 3000;
 const DB_PATH = 'recipe.db';
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Add request logging
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
 
 // Add CSP headers
 app.use((req, res, next) => {
@@ -131,6 +141,59 @@ app.get('/api/recipes', (req, res) => {
         res.json(rows);
       }
     });
+});
+
+// API endpoint to add a new recipe
+app.post('/api/recipes', (req, res) => {
+  console.log('POST /api/recipes request received');
+  console.log('Request body:', req.body);
+  
+  const { title, image, time, serving, difficulty, description, ingredients, instructions } = req.body;
+  
+  // Validate required fields
+  if (!title || !image || !time || !serving || !difficulty || !description || !ingredients || !instructions) {
+    console.log('Validation failed: missing required fields');
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  
+  // Convert arrays to JSON strings for storage
+  try {
+    const ingredientsJSON = JSON.stringify(ingredients);
+    const instructionsJSON = JSON.stringify(instructions);
+    
+    const insertSQL = `
+      INSERT INTO recipes (title, image, time, serving, difficulty, description, ingredients, instructions)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    db.run(insertSQL, 
+      [title, image, time, serving, difficulty, description, ingredientsJSON, instructionsJSON], 
+      function(err) {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        
+        console.log('Recipe successfully added with ID:', this.lastID);
+        
+        // Return the newly created recipe with its ID
+        res.status(201).json({
+          id: this.lastID,
+          title,
+          image,
+          time,
+          serving,
+          difficulty,
+          description,
+          ingredients,
+          instructions
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Server error in POST /api/recipes:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
   
 app.listen(PORT, () => {
