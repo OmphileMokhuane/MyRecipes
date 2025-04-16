@@ -75,17 +75,27 @@ function openRecipeInfoModal(recipeId) {
 
     const modal = document.getElementById('recipeModal');
     modal.innerHTML = `
-            <div class="modal-content">
+        <div class="modal-content">
             <span class="close" id="closeModal">&times;</span>
             <h2>${recipe.title}</h2>
             <img src="${recipe.image}" alt="${recipe.title}">
-            <p><i class="far fa-clock"></i> ${recipe.time}</p>
-            <p>${recipe.description}</p>
-            <h3>Ingredients:</h3>
-            <ul>${recipe.ingredients.map(item => `<li>${item}</li>`).join('')}</ul>
-            <h3>Instructions:</h3>
-            <ol>${recipe.instructions.map(step => `<li>${step}</li>`).join('')}</ol>
-            </div>`;
+            <div class="recipe-meta">
+                <p><i class="far fa-clock"></i> ${recipe.time}</p>
+                <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
+                <p><i class="fas fa-signal"></i> ${recipe.difficulty}</p>
+            </div>
+            <div class="description">
+                <p>${recipe.description}</p>
+            </div>
+            <h3>Ingredients</h3>
+            <ul class="ingredients">
+                ${recipe.ingredients.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+            <h3>Instructions</h3>
+            <ol class="instructions">
+                ${recipe.instructions.map(step => `<li>${step}</li>`).join('')}
+            </ol>
+        </div>`;
 
     // show modal
     modal.classList.remove('hidden'); 
