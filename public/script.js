@@ -86,6 +86,7 @@ function createRecipeCards(){
             <h3>${recipe.title}</h3>
             <p><i class="far fa-clock"></i> ${recipe.time}</p>
             <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
+            <p><i class="fas fa-tag"></i> ${recipe.category || 'Uncategorized'}</p>
             <span class="difficulty">${recipe.difficulty}</span>
           </a>`;
     });
@@ -114,6 +115,7 @@ function openRecipeInfoModal(recipeId) {
                 <p><i class="far fa-clock"></i> ${recipe.time}</p>
                 <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
                 <p><i class="fas fa-signal"></i> ${recipe.difficulty}</p>
+                <p><i class="fas fa-tag"></i> ${recipe.category || 'Uncategorized'}</p>
             </div>
             <div class="description">
                 <p>${recipe.description}</p>
@@ -162,7 +164,44 @@ function openAddRecipeModal(){
                     <input type="url" id="image" name="image" required>
                     <div class="error-message" id="image-error"></div>
                 </div>
-                // ... existing form groups ...
+                <div class="form-group">
+                    <label for="time">Cooking Time</label>
+                    <input type="text" id="time" name="time" placeholder="e.g. 30 minutes" required>
+                    <div class="error-message" id="time-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="serving">Servings</label>
+                    <input type="text" id="serving" name="serving" placeholder="e.g. 4 servings" required>
+                    <div class="error-message" id="serving-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="difficulty">Difficulty</label>
+                    <select id="difficulty" name="difficulty" required>
+                        <option value="">Select difficulty</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                    <div class="error-message" id="difficulty-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Dessert">Dessert</option>
+                        <option value="Vegan">Vegan</option>
+                        <option value="Quick & Easy">Quick & Easy</option>
+                    </select>
+                    <div class="error-message" id="category-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3" required></textarea>
+                    <div class="error-message" id="description-error"></div>
+                </div>
                 <div class="form-group">
                     <label for="ingredients">Ingredients (one per line)</label>
                     <textarea id="ingredients" name="ingredients" rows="5" required></textarea>
@@ -207,6 +246,7 @@ function openAddRecipeModal(){
         const image = document.getElementById('image').value.trim();
         const ingredients = document.getElementById('ingredients').value.trim();
         const instructions = document.getElementById('instructions').value.trim();
+        const category = document.getElementById('category').value.trim();
         
         let isValid = true;
         
@@ -218,10 +258,7 @@ function openAddRecipeModal(){
         if (!image) {
             document.getElementById('image-error').textContent = 'Image URL is required';
             isValid = false;
-        } else if (!isValidUrl(image)) {
-            document.getElementById('image-error').textContent = 'Please enter a valid URL';
-            isValid = false;
-        }
+        } 
         
         if (!ingredients) {
             document.getElementById('ingredients-error').textContent = 'At least one ingredient is required';
@@ -230,6 +267,11 @@ function openAddRecipeModal(){
 
         if (!instructions) {
             document.getElementById('instructions-error').textContent = 'At least one instruction step is required';
+            isValid = false;
+        }
+        
+        if (!category) {
+            document.getElementById('category-error').textContent = 'Category is required';
             isValid = false;
         }
         
@@ -248,7 +290,8 @@ function openAddRecipeModal(){
             difficulty: document.getElementById('difficulty').value,
             description: document.getElementById('description').value,
             ingredients: ingredients.split('\n').filter(line => line.trim() !== ''),
-            instructions: instructions.split('\n').filter(line => line.trim() !== '')
+            instructions: instructions.split('\n').filter(line => line.trim() !== ''),
+            category: category
         };
         
         submitNewRecipe(newRecipe);
@@ -363,6 +406,7 @@ function searchResult() {
             <h3>${recipe.title}</h3>
             <p><i class="far fa-clock"></i> ${recipe.time}</p>
             <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
+            <p><i class="fas fa-tag"></i> ${recipe.category || 'Uncategorized'}</p>
             <span class="difficulty">${recipe.difficulty}</span>
         `;
         card.addEventListener('click', function(event) {
@@ -373,3 +417,79 @@ function searchResult() {
     });
     recipeGrid.appendChild(fragment);
 }
+
+function filterByCategory(category){
+    const recipeGrid = document.getElementById('recipe-grid');
+    
+    // Clear current active category
+    document.querySelectorAll('#categories ul li a').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // If a category link was clicked, add active class
+    if (category) {
+        document.querySelectorAll('#categories ul li a').forEach(item => {
+            if (item.textContent.trim() === category) {
+                item.classList.add('active');
+            }
+        });
+    }
+    
+    // If category is null, show all recipes
+    if (!category) {
+        createRecipeCards();
+        return;
+    }
+    
+    const filteredRecipes = dataset.filter(recipe => 
+        recipe.category === category
+    );
+    
+    recipeGrid.innerHTML = '';
+    
+    if (filteredRecipes.length === 0) {
+        const noRecipesDiv = document.createElement('div');
+        noRecipesDiv.className = 'no-recipes';
+        noRecipesDiv.innerHTML = `
+            <p>No recipes found in the "${category}" category</p>
+            <button onclick="filterByCategory()" class="clear-search-btn">
+                View All Recipes
+            </button>
+        `;
+        recipeGrid.appendChild(noRecipesDiv);
+        return;
+    }
+    
+    const fragment = document.createDocumentFragment();
+    filteredRecipes.forEach(recipe => {
+        const card = document.createElement('a');
+        card.href = '#';
+        card.className = 'recipe-card';
+        card.dataset.id = recipe.id;
+        card.innerHTML = `
+            <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image">
+            <h3>${recipe.title}</h3>
+            <p><i class="far fa-clock"></i> ${recipe.time}</p>
+            <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
+            <p><i class="fas fa-tag"></i> ${recipe.category || 'Uncategorized'}</p>
+            <span class="difficulty">${recipe.difficulty}</span>
+        `;
+        card.addEventListener('click', function(event) {
+            event.preventDefault();
+            openRecipeInfoModal(this.dataset.id);
+        });
+        fragment.appendChild(card);
+    });
+    recipeGrid.appendChild(fragment);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    // Add event listeners to category links
+    document.querySelectorAll('#categories ul li a').forEach(categoryLink => {
+        categoryLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            const category = this.textContent.trim();
+            filterByCategory(category);
+        });
+    });
+});
