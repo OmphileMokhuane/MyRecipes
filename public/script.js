@@ -2,6 +2,8 @@ let dataset = [];
 
 async function fetchRecipes() {
     const loader = document.getElementById('js-preloader');
+    const recipeGrid = document.getElementById('recipe-grid');
+
     if (!loader) {
         console.error('Loader element not found');
         return;
@@ -15,7 +17,7 @@ async function fetchRecipes() {
         const response = await fetch('http://localhost:3000/api/recipes');
         
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -23,15 +25,32 @@ async function fetchRecipes() {
         console.log('Fetched recipes:', dataset);
         
         if (dataset.length === 0) {
-            console.warn('No recipes found in the database.');
+            recipeGrid.innerHTML = `
+                <div class="no-recipes">
+                    <p>No recipes found in the database.</p>
+                    <button onclick="openAddRecipeModal()" class="add-recipe-btn">
+                        Add Your First Recipe
+                    </button>
+                </div>
+            `;
+            return;
         }
+
+        createRecipeCards();
     } catch (error) {
         console.error('Error fetching recipes:', error);
-        document.getElementById('recipe-grid').innerHTML = 
-            `<div class="error-message">
+        recipeGrid.innerHTML = `
+            <div class="error-message">
                 <p>Error loading recipes: ${error.message}</p>
-                <p>Please check that the server is running.</p>
-            </div>`;
+                <p>Please try the following:</p>
+                <ul>
+                    <li>Check your internet connection</li>
+                    <li>Make sure the server is running</li>
+                    <li>Try refreshing the page</li>
+                </ul>
+                <button onclick="fetchRecipes()" class="retry-btn">Try Again</button>
+            </div>
+        `;
     } finally {
         // Hide loader
         loader.classList.add('loaded');
@@ -136,39 +155,25 @@ function openAddRecipeModal(){
                 <div class="form-group">
                     <label for="title">Recipe Title</label>
                     <input type="text" id="title" name="title" required>
+                    <div class="error-message" id="title-error"></div>
                 </div>
                 <div class="form-group">
                     <label for="image">Image URL</label>
-                    <input type="text" id="image" name="image" required>
+                    <input type="url" id="image" name="image" required>
+                    <div class="error-message" id="image-error"></div>
                 </div>
-                <div class="form-group">
-                    <label for="time">Cooking Time</label>
-                    <input type="text" id="time" name="time" placeholder="e.g. 30 minutes" required>
-                </div>
-                <div class="form-group">
-                    <label for="serving">Servings</label>
-                    <input type="text" id="serving" name="serving" placeholder="e.g. 4 servings" required>
-                </div>
-                <div class="form-group">
-                    <label for="difficulty">Difficulty</label>
-                    <select id="difficulty" name="difficulty" required>
-                        <option value="Easy">Easy</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Hard">Hard</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="3" required></textarea>
-                </div>
+                // ... existing form groups ...
                 <div class="form-group">
                     <label for="ingredients">Ingredients (one per line)</label>
-                    <textarea id="ingredients" name="ingredients" rows="5" placeholder="1 cup flour&#10;2 eggs&#10;1/2 cup sugar" required></textarea>
+                    <textarea id="ingredients" name="ingredients" rows="5" required></textarea>
+                    <div class="error-message" id="ingredients-error"></div>
                 </div>
                 <div class="form-group">
                     <label for="instructions">Instructions (one step per line)</label>
-                    <textarea id="instructions" name="instructions" rows="5" placeholder="Mix dry ingredients&#10;Add wet ingredients&#10;Bake at 350°F for 25 minutes" required></textarea>
+                    <textarea id="instructions" name="instructions" rows="5" required></textarea>
+                    <div class="error-message" id="instructions-error"></div>
                 </div>
+                <div class="form-errors" id="form-errors"></div>
                 <button type="submit" class="submit-btn">Add Recipe</button>
             </form>
         </div>
@@ -193,36 +198,74 @@ function openAddRecipeModal(){
     document.getElementById('add-recipe-form').addEventListener('submit', function(event) {
         event.preventDefault();
         
-        // Get form values
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+        document.getElementById('form-errors').textContent = '';
+        
+        // Validate form fields
+        const title = document.getElementById('title').value.trim();
+        const image = document.getElementById('image').value.trim();
+        const ingredients = document.getElementById('ingredients').value.trim();
+        const instructions = document.getElementById('instructions').value.trim();
+        
+        let isValid = true;
+        
+        if (!title) {
+            document.getElementById('title-error').textContent = 'Recipe title is required';
+            isValid = false;
+        }
+        
+        if (!image) {
+            document.getElementById('image-error').textContent = 'Image URL is required';
+            isValid = false;
+        } else if (!isValidUrl(image)) {
+            document.getElementById('image-error').textContent = 'Please enter a valid URL';
+            isValid = false;
+        }
+        
+        if (!ingredients) {
+            document.getElementById('ingredients-error').textContent = 'At least one ingredient is required';
+            isValid = false;
+        }
+
+        if (!instructions) {
+            document.getElementById('instructions-error').textContent = 'At least one instruction step is required';
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            document.getElementById('form-errors').textContent = 'Please correct the errors above';
+            return;
+        }
+        
+        // Get form values and submit if valid
         const newRecipe = {
             id: dataset.length > 0 ? Math.max(...dataset.map(r => r.id)) + 1 : 1,
-            title: document.getElementById('title').value,
-            image: document.getElementById('image').value,
+            title: title,
+            image: image,
             time: document.getElementById('time').value,
             serving: document.getElementById('serving').value,
             difficulty: document.getElementById('difficulty').value,
             description: document.getElementById('description').value,
-            ingredients: document.getElementById('ingredients').value.split('\n').filter(line => line.trim() !== ''),
-            instructions: document.getElementById('instructions').value.split('\n').filter(line => line.trim() !== '')
+            ingredients: ingredients.split('\n').filter(line => line.trim() !== ''),
+            instructions: instructions.split('\n').filter(line => line.trim() !== '')
         };
-
-        // Send POST request to add recipe
+        
         submitNewRecipe(newRecipe);
     });
 }
 
 async function submitNewRecipe(recipe) {
     const loader = document.getElementById('js-preloader');
+    const modal = document.getElementById('add-recipe-modal');
+    
     if (!loader) {
         console.error('Loader element not found');
         return;
     }
 
     try {
-        // Show loader
         loader.classList.remove('loaded');
-        
-        console.log('Attempting to submit recipe:', recipe);
         
         const response = await fetch('http://localhost:3000/api/recipes', {
             method: 'POST',
@@ -231,23 +274,30 @@ async function submitNewRecipe(recipe) {
             },
             body: JSON.stringify(recipe)
         });
-        
-        console.log('Response status:', response.status);
-        
+
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Server returned ${response.status}`);
         }
 
         await fetchRecipes();
-        createRecipeCards();
+        modal.classList.add('hidden');
         
-        document.getElementById('add-recipe-modal').classList.add('hidden');
-        alert('Recipe added successfully!');
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'success-message';
+        successMessage.textContent = 'Recipe added successfully!';
+        document.body.appendChild(successMessage);
+        
+        setTimeout(() => {
+            successMessage.remove();
+        }, 3000);
+        
     } catch (error) {
         console.error('Error adding recipe:', error);
-        alert(`Error adding recipe: ${error.message}`);
+        document.getElementById('form-errors').textContent = 
+            `Error adding recipe: ${error.message}. Please try again.`;
     } finally {
-        // Hide loader
         loader.classList.add('loaded');
     }
 }

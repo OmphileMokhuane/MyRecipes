@@ -762,3 +762,71 @@ footer p {
     background-color: #b03d67;
     transform: translateY(-2px);
 }
+
+/* error handling */
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.error-message:not(:empty) {
+    display: block;
+}
+
+.form-errors {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.form-group input:invalid,
+.form-group textarea:invalid {
+    border-color: #dc3545;
+}
+
+.success-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 1rem;
+    border-radius: 4px;
+    animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.retry-btn,
+.add-recipe-btn {
+    background-color: #c94f7c;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover,
+.add-recipe-btn:hover {
+    background-color: #b03d67;
+    transform: translateY(-2px);
+}
+
+.no-recipes {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f9f3f3;
+    border-radius: 8px;
+    margin: 2rem auto;
+    max-width: 500px;
+}
