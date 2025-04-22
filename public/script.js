@@ -301,3 +301,60 @@ async function submitNewRecipe(recipe) {
         loader.classList.add('loaded');
     }
 }
+
+
+const searchInput = document.getElementById('search-input');
+searchInput.addEventListener('click',searchResult);
+
+function searchResult(){
+    const searchTerm = searchInput.value.toLowerCase().trim();
+
+    if( searchTerm === '' || searchTerm.length < 3){
+        createRecipeCards(); //show all recipes if search is empty or less the 3 letters
+        return;
+    }
+
+    const filteredRecipes = dataset.filter(recipe => {
+        // Search in title, description, and ingredients
+        return recipe.title.toLowerCase().includes(searchTerm) || recipe.description.toLowerCase().includes(searchTerm) || recipe.ingredients.some(ingredient => 
+            ingredient.toLowerCase().includes(searchTerm)
+        );
+    });
+
+    // Update the recipe grid with filtered results
+    const recipeGrid = document.getElementById('recipe-grid');
+    recipeGrid.innerHTML = '';
+
+    if(filteredRecipes.length === 0){
+        recipeGrid.innerHTML = `
+            <div class="no-recipes">
+                <p>No recipes found matching "${searchTerm}"</p>
+                <button onclick="searchInput.value=''; searchResult()" class="clear-search-btn">
+                    Clear Search
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    // Create cards for filtered recipes
+    filteredRecipes.forEach(recipe => {
+        recipeGrid.innerHTML += `
+            <a href="#" class="recipe-card" data-id="${recipe.id}">
+                <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image">
+                <h3>${recipe.title}</h3>
+                <p><i class="far fa-clock"></i> ${recipe.time}</p>
+                <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
+                <span class="difficulty">${recipe.difficulty}</span>
+            </a>`;
+    });
+
+    // Add event listeners to the filtered recipe cards
+    document.querySelectorAll('.recipe-card').forEach(card => {
+        card.addEventListener('click', function(event) {
+            event.preventDefault();
+            const recipeId = this.getAttribute('data-id');
+            openRecipeInfoModal(recipeId);
+        });
+    });
+}
