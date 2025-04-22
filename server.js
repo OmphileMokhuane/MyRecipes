@@ -61,7 +61,8 @@ function initializeDatabase() {
             difficulty TEXT,
             description TEXT,
             ingredients TEXT,
-            instructions TEXT
+            instructions TEXT,
+            category TEXT
         )
     `;
   
@@ -83,13 +84,52 @@ function initializeDatabase() {
             if (row.count === 0) {
             insertDummyRecipes();
             } else {
-            console.log(`Database already has ${row.count} recipes.`);
+                // Check if existing recipes have category field
+                db.get('SELECT category FROM recipes LIMIT 1', (err) => {
+                    if (err && err.message.includes('no such column')) {
+                        // Add category column if it doesn't exist
+                        db.run('ALTER TABLE recipes ADD COLUMN category TEXT', (err) => {
+                            if (err) {
+                                console.error('Error adding category column:', err.message);
+                            } else {
+                                console.log('Added category column to existing recipes table');
+                                updateExistingRecipesWithCategories();
+                            }
+                        });
+                    } else {
+                        console.log('Category column already exists in recipes table');
+                    }
+                });
+                console.log(`Database already has ${row.count} recipes.`);
             }
         });
     });
-  }
+}
+
+// Function to add categories to existing recipes
+function updateExistingRecipesWithCategories() {
+    const categories = ['Dinner', 'Lunch', 'Dinner', 'Lunch']; // Default categories for the 4 existing recipes
+    
+    db.all('SELECT id FROM recipes', [], (err, rows) => {
+        if (err) {
+            console.error('Error selecting recipes for category update:', err.message);
+            return;
+        }
+        
+        rows.forEach((row, index) => {
+            const category = categories[index % categories.length];
+            db.run('UPDATE recipes SET category = ? WHERE id = ?', [category, row.id], (err) => {
+                if (err) {
+                    console.error(`Error updating category for recipe ID ${row.id}:`, err.message);
+                }
+            });
+        });
+        
+        console.log('Updated existing recipes with default categories');
+    });
+}
   
-  function insertDummyRecipes() {
+function insertDummyRecipes() {
     const recipes = [
       {
         title: "Butter Chicken",
@@ -123,7 +163,8 @@ function initializeDatabase() {
           "Return chicken to the pan, cook for 10 minutes.",
           "Reduce heat and stir in cream. Simmer for 5 minutes.",
           "Season with salt to taste and garnish with fresh cilantro before serving."
-        ])
+        ]),
+        category: "Dinner"
       },
       {
         title: "Tacos",
@@ -153,7 +194,8 @@ function initializeDatabase() {
           "Assemble tacos by placing meat in tortillas and topping with lettuce, tomatoes, onions, cheese, and avocado.",
           "Garnish with cilantro, a squeeze of lime juice, sour cream, and hot sauce.",
           "Serve immediately while still warm."
-        ])
+        ]),
+        category: "Lunch"
       },
       {
         title: "Egg Fried Rice",
@@ -186,7 +228,8 @@ function initializeDatabase() {
           "Add soy sauce, sesame oil, white pepper, and salt. Toss until everything is well combined.",
           "Stir in green onions and cook for another minute.",
           "Taste and adjust seasonings as needed before serving."
-        ])
+        ]),
+        category: "Quick & Easy"
       },
       {
         title: "Gourmet Burger",
@@ -222,13 +265,14 @@ function initializeDatabase() {
           "Mix mayonnaise, ketchup, and mustard to make a sauce. Spread on both bun halves.",
           "Assemble burgers: bottom bun, sauce, lettuce, patty with melted cheese, tomato, onion, bacon (if using), more sauce, top bun.",
           "Serve immediately with your favorite sides."
-        ])
+        ]),
+        category: "Lunch"
       }
     ];
   
     const insertSQL = `
-      INSERT INTO recipes (title, image, time, serving, difficulty, description, ingredients, instructions)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO recipes (title, image, time, serving, difficulty, description, ingredients, instructions, category)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
   
     recipes.forEach(recipe => {
@@ -240,7 +284,8 @@ function initializeDatabase() {
         recipe.difficulty,
         recipe.description,
         recipe.ingredients,
-        recipe.instructions
+        recipe.instructions,
+        recipe.category
       ]);
     });
   
@@ -269,10 +314,10 @@ app.post('/api/recipes', (req, res) => {
   console.log('POST /api/recipes request received');
   console.log('Request body:', req.body);
   
-  const { title, image, time, serving, difficulty, description, ingredients, instructions } = req.body;
+  const { title, image, time, serving, difficulty, description, ingredients, instructions, category } = req.body;
   
   // Validate required fields
-  if (!title || !image || !time || !serving || !difficulty || !description || !ingredients || !instructions) {
+  if (!title || !image || !time || !serving || !difficulty || !description || !ingredients || !instructions || !category) {
     console.log('Validation failed: missing required fields');
     return res.status(400).json({ error: 'All fields are required' });
   }
@@ -283,12 +328,12 @@ app.post('/api/recipes', (req, res) => {
     const instructionsJSON = JSON.stringify(instructions);
     
     const insertSQL = `
-      INSERT INTO recipes (title, image, time, serving, difficulty, description, ingredients, instructions)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO recipes (title, image, time, serving, difficulty, description, ingredients, instructions, category)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     db.run(insertSQL, 
-      [title, image, time, serving, difficulty, description, ingredientsJSON, instructionsJSON], 
+      [title, image, time, serving, difficulty, description, ingredientsJSON, instructionsJSON, category], 
       function(err) {
         if (err) {
           console.error('Database error:', err);
@@ -307,7 +352,8 @@ app.post('/api/recipes', (req, res) => {
           difficulty,
           description,
           ingredients,
-          instructions
+          instructions,
+          category
         });
       }
     );

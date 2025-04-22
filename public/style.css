@@ -246,6 +246,22 @@ header nav ul li a:hover {
     height: 1rem;
 }
 
+.clear-search-btn {
+    background-color: #c94f7c;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.clear-search-btn:hover {
+    background-color: #b03d67;
+    transform: translateY(-2px);
+}
+
 /* Recipe Section */
 #recipes {
     padding: 3.8rem 2rem;
