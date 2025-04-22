@@ -258,6 +258,7 @@ function openAddRecipeModal(){
 async function submitNewRecipe(recipe) {
     const loader = document.getElementById('js-preloader');
     const modal = document.getElementById('add-recipe-modal');
+    const formErrors = document.getElementById('form-errors');
     
     if (!loader) {
         console.error('Loader element not found');
@@ -283,78 +284,92 @@ async function submitNewRecipe(recipe) {
         await fetchRecipes();
         modal.classList.add('hidden');
         
-        // Show success message
-        const successMessage = document.createElement('div');
-        successMessage.className = 'success-message';
-        successMessage.textContent = 'Recipe added successfully!';
-        document.body.appendChild(successMessage);
-        
-        setTimeout(() => {
-            successMessage.remove();
-        }, 3000);
+        showSuccessMessage('Recipe added successfully!');
         
     } catch (error) {
         console.error('Error adding recipe:', error);
-        document.getElementById('form-errors').textContent = 
-            `Error adding recipe: ${error.message}. Please try again.`;
+        formErrors.textContent = `Error adding recipe: ${error.message}. Please try again.`;
     } finally {
         loader.classList.add('loaded');
     }
 }
 
+function showSuccessMessage(message) {
+    const successMessage = document.createElement('div');
+    successMessage.className = 'success-message';
+    successMessage.textContent = message;
+    document.body.appendChild(successMessage);
+    
+    setTimeout(() => {
+        successMessage.remove();
+    }, 3000);
+}
+
+function debounce(func, wait){
+    let timeout;
+    return function executedFunction(...args){
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    }
+}
 
 const searchInput = document.getElementById('search-input');
-searchInput.addEventListener('click',searchResult);
+searchInput.addEventListener('click',debounce(searchResult,300));
 
-function searchResult(){
+function searchResult() {
     const searchTerm = searchInput.value.toLowerCase().trim();
-
-    if( searchTerm === '' || searchTerm.length < 3){
-        createRecipeCards(); //show all recipes if search is empty or less the 3 letters
+    const recipeGrid = document.getElementById('recipe-grid');
+    
+    if (searchTerm === '' || searchTerm.length < 3) {
+        createRecipeCards();
         return;
     }
 
     const filteredRecipes = dataset.filter(recipe => {
-        // Search in title, description, and ingredients
-        return recipe.title.toLowerCase().includes(searchTerm) || recipe.description.toLowerCase().includes(searchTerm) || recipe.ingredients.some(ingredient => 
-            ingredient.toLowerCase().includes(searchTerm)
-        );
+        return recipe.title.toLowerCase().includes(searchTerm) || 
+               recipe.description.toLowerCase().includes(searchTerm) || 
+               recipe.ingredients.some(ingredient => 
+                   ingredient.toLowerCase().includes(searchTerm)
+               );
     });
 
-    // Update the recipe grid with filtered results
-    const recipeGrid = document.getElementById('recipe-grid');
     recipeGrid.innerHTML = '';
 
-    if(filteredRecipes.length === 0){
-        recipeGrid.innerHTML = `
-            <div class="no-recipes">
-                <p>No recipes found matching "${searchTerm}"</p>
-                <button onclick="searchInput.value=''; searchResult()" class="clear-search-btn">
-                    Clear Search
-                </button>
-            </div>
+    if (filteredRecipes.length === 0) {
+        const noRecipesDiv = document.createElement('div');
+        noRecipesDiv.className = 'no-recipes';
+        noRecipesDiv.innerHTML = `
+            <p>No recipes found matching "${searchTerm}"</p>
+            <button onclick="searchInput.value=''; searchResult()" class="clear-search-btn">
+                Clear Search
+            </button>
         `;
+        recipeGrid.appendChild(noRecipesDiv);
         return;
     }
 
-    // Create cards for filtered recipes
+    const fragment = document.createDocumentFragment();
     filteredRecipes.forEach(recipe => {
-        recipeGrid.innerHTML += `
-            <a href="#" class="recipe-card" data-id="${recipe.id}">
-                <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image">
-                <h3>${recipe.title}</h3>
-                <p><i class="far fa-clock"></i> ${recipe.time}</p>
-                <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
-                <span class="difficulty">${recipe.difficulty}</span>
-            </a>`;
-    });
-
-    // Add event listeners to the filtered recipe cards
-    document.querySelectorAll('.recipe-card').forEach(card => {
+        const card = document.createElement('a');
+        card.href = '#';
+        card.className = 'recipe-card';
+        card.dataset.id = recipe.id;
+        card.innerHTML = `
+            <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image">
+            <h3>${recipe.title}</h3>
+            <p><i class="far fa-clock"></i> ${recipe.time}</p>
+            <p><i class="fas fa-utensils"></i> ${recipe.serving}</p>
+            <span class="difficulty">${recipe.difficulty}</span>
+        `;
         card.addEventListener('click', function(event) {
             event.preventDefault();
-            const recipeId = this.getAttribute('data-id');
-            openRecipeInfoModal(recipeId);
+            openRecipeInfoModal(this.dataset.id);
         });
+        fragment.appendChild(card);
     });
+    recipeGrid.appendChild(fragment);
 }
