@@ -522,6 +522,77 @@ footer p {
     margin: 10px 0;
 }
 
+/* Loader Styles */
+.js-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    z-index: 9999;
+    transition: opacity 0.25s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.js-preloader.loaded {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@keyframes dot8567 {
+    50% {
+        transform: translateX(96px);
+    }
+}
+
+@keyframes dots723423 {
+    50% {
+        transform: translateX(-31px);
+    }
+}
+
+.preloader-inner {
+    position: relative;
+    width: 142px;
+    height: 40px;
+    background: transparent;
+}
+
+.preloader-inner .dot {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 12px;
+    left: 15px;
+    background: #e75e8d;
+    border-radius: 50%;
+    transform: translateX(0);
+    animation: dot8567 2.8s infinite;
+}
+
+.preloader-inner .dots {
+    transform: translateX(0);
+    margin-top: 12px;
+    margin-left: 31px;
+    animation: dots723423 2.8s infinite;
+}
+
+.preloader-inner .dots span {
+    display: block;
+    float: left;
+    width: 16px;
+    height: 16px;
+    margin-left: 16px;
+    background: #e75e8d;
+    border-radius: 50%;
+}
+
 /* Responsive Styles */
 @media (max-width: 1024px) {
     .hero-info h2 {

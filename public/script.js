@@ -1,7 +1,16 @@
 let dataset = [];
 
 async function fetchRecipes() {
+    const loader = document.getElementById('js-preloader');
+    if (!loader) {
+        console.error('Loader element not found');
+        return;
+    }
+
     try { 
+        // Show loader
+        loader.classList.remove('loaded');
+        
         console.log('Attempting to fetch recipes...');
         const response = await fetch('http://localhost:3000/api/recipes');
         
@@ -10,8 +19,8 @@ async function fetchRecipes() {
         }
         
         const data = await response.json();
-        dataset = data; // Store the fetched data in dataset
-        console.log('Fetched recipes:', dataset); // Debug log
+        dataset = data;
+        console.log('Fetched recipes:', dataset);
         
         if (dataset.length === 0) {
             console.warn('No recipes found in the database.');
@@ -23,6 +32,9 @@ async function fetchRecipes() {
                 <p>Error loading recipes: ${error.message}</p>
                 <p>Please check that the server is running.</p>
             </div>`;
+    } finally {
+        // Hide loader
+        loader.classList.add('loaded');
     }
 }
 
@@ -200,7 +212,16 @@ function openAddRecipeModal(){
 }
 
 async function submitNewRecipe(recipe) {
+    const loader = document.getElementById('js-preloader');
+    if (!loader) {
+        console.error('Loader element not found');
+        return;
+    }
+
     try {
+        // Show loader
+        loader.classList.remove('loaded');
+        
         console.log('Attempting to submit recipe:', recipe);
         
         const response = await fetch('http://localhost:3000/api/recipes', {
@@ -217,17 +238,16 @@ async function submitNewRecipe(recipe) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        // Refresh recipes after successful submission
         await fetchRecipes();
         createRecipeCards();
         
-        // Close the modal
         document.getElementById('add-recipe-modal').classList.add('hidden');
-        
-        // Show success message
         alert('Recipe added successfully!');
     } catch (error) {
         console.error('Error adding recipe:', error);
         alert(`Error adding recipe: ${error.message}`);
+    } finally {
+        // Hide loader
+        loader.classList.add('loaded');
     }
 }
